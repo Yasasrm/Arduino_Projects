@@ -29,6 +29,8 @@
 #define FILL_LEFT 4
 #define FILL_MIDDLE 5
 
+static unsigned long last_millis = 0;
+
 const char* ssid     = "SLTH";
 const char* password = "nicwifi1122";
 
@@ -48,10 +50,6 @@ int lcdLed = 0;
 int relaySw1 = 0;
 int relaySw2 = 0;
 int relaySw3 = 0;
-int isr1Tr = 0;
-int isr2Tr = 0;
-int isr3Tr = 0;
-int isr4Tr = 0;
 int delayTime = 1000;
 
 byte boxLeft[8] = {
@@ -112,78 +110,55 @@ LiquidCrystal * lcd;
 WiFiServer server(80);
 
 void IRAM_ATTR lcdLedISR() {
-  isr1Tr++;
-  Serial.println("lcdLedISR: " + String(isr1Tr));
-  if (lcdLed == 0 && isr1Tr == 1) {
-    lcdLed = 1;
-  } else if (lcdLed == 1 && isr1Tr == 1) {
-    lcdLed = 0;
-  }
-
-  if (isr1Tr == 1) {
+  unsigned long m = millis();
+  if (m - last_millis > 200) {
+    if (lcdLed == 0) {
+      lcdLed = 1;
+    } else {
+      lcdLed = 0;
+    }
     digitalWrite(LCD_LED, lcdLed);
-    Serial.println("Output updated!");
-  } else {
-    delay(20);
   }
-  isr1Tr = 0;
+  last_millis = m;
 }
 
 void IRAM_ATTR ldrLedISR_1() {
-  isr2Tr++;
-  Serial.println("ldrLedISR_1: " + String(isr2Tr));
-  int ldr = digitalRead(LDR_1);
-  if (ldr == 0 &&  isr2Tr == 1) {
-    relaySw1 = 1;
-  } else if (ldr == 1 &&  isr2Tr == 1) {
-    relaySw1 = 0;
-  }
-
-  if (isr2Tr == 1) {
+  unsigned long m = millis();
+  if (m - last_millis > 200) {
+    if (relaySw1 == 0) {
+      relaySw1 = 1;
+    } else {
+      relaySw1 = 0;
+    }
     digitalWrite(RELAY_1, relaySw1);
-    Serial.println("Output updated!");
-  } else {
-    delay(20);
   }
-  isr2Tr = 0;
+  last_millis = m;
 }
 
 void IRAM_ATTR ldrLedISR_2() {
-  isr3Tr++;
-  Serial.println("ldrLedISR_2: " + String(isr3Tr));
-  int ldr = digitalRead(LDR_2);
-  if (ldr == 0 &&  isr3Tr == 1) {
-    relaySw2 = 1;
-  } else if (ldr == 1 &&  isr3Tr == 1) {
-    relaySw2 = 0;
-  }
-
-  if (isr3Tr == 1) {
+  unsigned long m = millis();
+  if (m - last_millis > 200) {
+    if (relaySw2 == 0) {
+      relaySw2 = 1;
+    } else {
+      relaySw2 = 0;
+    }
     digitalWrite(RELAY_2, relaySw2);
-    Serial.println("Output updated!");
-  } else {
-    delay(20);
   }
-  isr3Tr = 0;
+  last_millis = m;
 }
 
 void IRAM_ATTR ldrLedISR_3() {
-  isr4Tr++;
-  Serial.println("ldrLedISR_3: " + String(isr4Tr));
-  int ldr = digitalRead(LDR_3);
-  if (ldr == 0 &&  isr4Tr == 1) {
-    relaySw3 = 1;
-  } else if (ldr == 1 &&  isr4Tr == 1) {
-    relaySw3 = 0;
-  }
-
-  if (isr4Tr == 1) {
+  unsigned long m = millis();
+  if (m - last_millis > 200) {
+    if (relaySw3 == 0) {
+      relaySw3 = 1;
+    } else {
+      relaySw3 = 0;
+    }
     digitalWrite(RELAY_3, relaySw3);
-    Serial.println("Output updated!");
-  } else {
-    delay(20);
   }
-  isr4Tr = 0;
+  last_millis = m;
 }
 
 void setup() {
@@ -254,20 +229,26 @@ void loop() {
           progressBar(40, delayTime);
           if (rly1.equals("1")) {
             digitalWrite(RELAY_1, HIGH);
+            relaySw1 = 1;
           } else if (rly1.equals("0")) {
             digitalWrite(RELAY_1, LOW);
+            relaySw1 = 0;
           }
 
           if (rly2.equals("1")) {
             digitalWrite(RELAY_2, HIGH);
+            relaySw2 = 1;
           } else if (rly1.equals("0")) {
             digitalWrite(RELAY_2, LOW);
+            relaySw2 = 0;
           }
 
           if (rly3.equals("1")) {
             digitalWrite(RELAY_3, HIGH);
+            relaySw3 = 1;
           } else if (rly1.equals("0")) {
             digitalWrite(RELAY_3, LOW);
+            relaySw3 = 0;
           }
           displayInfoInst("CHECKING...");
           progressBar(50, delayTime);
